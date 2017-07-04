@@ -1,16 +1,26 @@
-var Airport = function(capacity) {
-  this.planes= [];
-  this.capacity= capacity;
+function AirportException(message) {
+  this.name = "AirportException";
+  this.message = message;
+}
+
+var Airport = function(capacity, weatherReporter) {
+  this.capacity = capacity;
+  this.weatherReporter = weatherReporter;
+  this.planes = [];
 };
 
 Airport.prototype.land = function (plane) {
-  if (!plane.onGround) {
-    this.planes.push(plane);
-  };
+  if (this._isFull()) {
+    throw new AirportException("Cannot land plane: airport full");
+  }
+  if (this.weatherReporter.isStormy()) {
+    throw new AirportException("Cannot land plane: weather is stormy");
+  }
+  plane.land(this);
+  this.planes.push(plane);
 };
 
-Airport.prototype.takeOff = function (plane) {
-  if (plane.onGround) {
-    this.planes.pop(plane);
-  };
+
+Airport.prototype._isFull = function () {
+  return this.planes.length >= this.capacity;
 };

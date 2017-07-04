@@ -3,23 +3,40 @@ describe("Airport", function() {
   var plane;
   
   beforeEach(function() {
-    airport = new Airport();
+    weatherReporter = new WeatherReporter();
+    airport = new Airport(5, weatherReporter);
     plane = new Plane();
-    spyOn(airport, 'planes');
-    airport.planes = [plane];
+    spyOn(plane, "land");
   });
   
-  it ("should land a plane", function() {
-    spyOn(plane, 'onGround');
-    plane.onGround = false;
-    airport.land(plane);
-    expect(airport.planes.length).toEqual(2);
+  describe("when not stormy", function() {
+    beforeEach(function() {
+      spyOn(weatherReporter, "isStormy").and.returnValue(false);
+    });
+    
+    it("instructs a plane to land", function() {
+      airport.land(plane);
+      expect(plane.land).toHaveBeenCalled();
+    });
   });
   
-  it ("should allow a plane to take off", function() {
-    airport.takeOff(plane);
-    expect(airport.planes.length).toEqual(0);
+  describe("when full", function() {
+    it("raises an error", function() {
+      [1, 2, 3, 4, 5].forEach(function(i) {
+        airport.land(plane);
+      });
+      expect(function() {
+        airport.land(plane);
+      }).toThrow(new AirportException("Cannot land plane: airport full"));
+    });
   });
   
-  
+  describe("when stormy", function() {
+    it("raises an error", function() {
+      spyOn(weatherReporter, "isStormy").and.returnValue(true);
+      expect(function() {
+        airport.land(plane);
+      }).toThrow(new AirportException("Cannot land plane: weather is stormy"));
+    });
+  });
 });
